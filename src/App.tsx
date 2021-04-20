@@ -13,7 +13,7 @@ interface buttonProps {
   onClick: (event: any) => void,
 }
 interface tttState {
-  history: Array<{squares: Array<Piece>}>,
+  history: Array<{squares: Array<Piece>, change: number|null}>,
   stepNumber: number,
   xIsNext: boolean,
 }
@@ -27,10 +27,6 @@ const Square: React.FC<buttonProps> = (props) => {
       {props.value}
     </button>
   );
-}
-
-function getNext(xIsNext: boolean): Piece {
-  return xIsNext ? 'X' : 'O';
 }
 class Board extends React.Component<boardProps> {
 
@@ -72,6 +68,7 @@ class Game extends React.Component<{}, tttState> {
     this.state = {
       history: [{
         squares: Array(9).fill(null),
+        change: null,
       }],
       stepNumber: 0,
       xIsNext: true,
@@ -89,6 +86,7 @@ class Game extends React.Component<{}, tttState> {
     this.setState({
       history: history.concat([{
         squares: squares,
+        change: i,
       }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
@@ -106,13 +104,13 @@ class Game extends React.Component<{}, tttState> {
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
-    const moves = history.map((move, step) => {
+    const moves = history.map((_, step) => {
       const desc = step ?
-      'Go to move #'+step :
+      'Go to move #'+step + getCoord(history[step].change!): // change is only null at step 0
       'Go to game start';
       return (
         <li key={step}>
-          <button onClick={()=> this.jumpTo(step)}>{desc}</button>
+          <button onClick={()=> this.jumpTo(step)}>{step == this.state.stepNumber ? <b>{desc}</b> : desc}</button>
         </li>
       )
     })
@@ -140,6 +138,13 @@ class Game extends React.Component<{}, tttState> {
       </div>
     );
   }
+}
+function getCoord(i: number): string {
+  return '(' + i%3 + ',' + Math.floor(i/3) + ')';
+}
+
+function getNext(xIsNext: boolean): Piece {
+  return xIsNext ? 'X' : 'O';
 }
 
 function calculateWinner(squares: Array<Piece>) {
