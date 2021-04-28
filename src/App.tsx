@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './App.css';
 
 const BOARD_SIZE = 3;
@@ -16,6 +16,7 @@ interface tttState {
   history: Array<{squares: Array<Piece>, change: number|null}>,
   stepNumber: number,
   xIsNext: boolean,
+  historyAscending: boolean,
 }
 
 const Square: React.FC<buttonProps> = (props) => {
@@ -42,7 +43,7 @@ class Board extends React.Component<boardProps> {
   renderRow(i: number) {
     let squares:JSX.Element[] = []
     for (let cell = 0; cell < BOARD_SIZE; cell++) {
-      squares.push(this.renderSquare(cell))
+      squares.push(this.renderSquare(i*BOARD_SIZE + cell))
     }
     return (
       <div className="board-row">
@@ -75,6 +76,7 @@ class Game extends React.Component<{}, tttState> {
       }],
       stepNumber: 0,
       xIsNext: true,
+      historyAscending: true,
     }
   }
 
@@ -107,7 +109,7 @@ class Game extends React.Component<{}, tttState> {
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
-    const moves = history.map((_, step) => {
+    let moves = history.map((_, step) => {
       const desc = step ?
       'Go to move #'+step + getCoord(history[step].change!): // change is only null at step 0
       'Go to game start';
@@ -117,6 +119,8 @@ class Game extends React.Component<{}, tttState> {
         </li>
       )
     })
+
+    if(!this.state.historyAscending) moves.reverse();
 
     let status: string;
     if(winner) {
@@ -136,6 +140,8 @@ class Game extends React.Component<{}, tttState> {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <input type="checkbox" onMouseDown={()=> this.setState({historyAscending: !this.state.historyAscending})}/> Toggle ordering
+          {/* <div>{this.state.historyAscending?"Toggled":"Not"}</div> */}
           <ol>{moves}</ol>
         </div>
       </div>
