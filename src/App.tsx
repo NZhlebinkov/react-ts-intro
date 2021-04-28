@@ -142,7 +142,7 @@ class Game extends React.Component<{}, tttState> {
           <div>{status}</div>
           <input type="checkbox" onMouseDown={()=> this.setState({historyAscending: !this.state.historyAscending})}/> Toggle ordering
           {/* <div>{this.state.historyAscending?"Toggled":"Not"}</div> */}
-          <ol>{moves}</ol>
+          <ol reversed={!this.state.historyAscending}>{moves}</ol>
         </div>
       </div>
     );
