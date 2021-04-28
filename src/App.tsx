@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import './App.css';
 
 const BOARD_SIZE = 3;
@@ -107,6 +107,16 @@ class Game extends React.Component<{}, tttState> {
       xIsNext: (step % 2) === 0.
     })
   }
+
+  containsNull(squares: Piece[]) {
+    for (let i = 0; i<squares.length; i++) {
+      if(squares[i] === null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
@@ -119,7 +129,7 @@ class Game extends React.Component<{}, tttState> {
       'Go to game start';
       return (
         <li key={step}>
-          <button onClick={()=> this.jumpTo(step)}>{step == this.state.stepNumber ? <b>{desc}</b> : desc}</button>
+          <button onClick={()=> this.jumpTo(step)}>{step === this.state.stepNumber ? <b>{desc}</b> : desc}</button>
         </li>
       )
     })
@@ -129,6 +139,8 @@ class Game extends React.Component<{}, tttState> {
     let status: string;
     if(winner) {
       status = "Winner: " + winner;
+    } else if(!this.containsNull(current.squares)) {
+      status = "This game is a draw.";
     } else {
       status = 'Next player: ' + getNext(this.state.xIsNext);
     }
