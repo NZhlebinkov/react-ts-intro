@@ -6,11 +6,13 @@ type Piece = 'X' | 'O';
 interface boardProps {
   squares: any,
   onClick: Function,
+  winningMoves: number[]|null;
 }
 
-interface buttonProps {
+interface squareProps {
   value: any,
   onClick: (event: any) => void,
+  isWinning: boolean,
 }
 interface tttState {
   history: Array<{squares: Array<Piece>, change: number|null}>,
@@ -19,13 +21,13 @@ interface tttState {
   historyAscending: boolean,
 }
 
-const Square: React.FC<buttonProps> = (props) => {
+const Square: React.FC<squareProps> = (props) => {
   return (
     <button 
       className="square"
       onClick={props.onClick}
       >
-      {props.value}
+      {props.isWinning?<i className={"winning"}>{props.value}</i>:props.value}
     </button>
   );
 }
@@ -36,6 +38,7 @@ class Board extends React.Component<boardProps> {
       <Square 
         value={this.props.squares[i]} 
         onClick={() => this.props.onClick(i)}
+        isWinning={this.props.winningMoves?this.props.winningMoves.includes(i):false}
       />
     );
   }
@@ -84,7 +87,7 @@ class Game extends React.Component<{}, tttState> {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    if(calculateWinner(squares) || squares[i]) {
+    if(squares[i]||calculateWinner(squares)) {
       return;
     }
     squares[i] = getNext(this.state.xIsNext);
@@ -107,8 +110,9 @@ class Game extends React.Component<{}, tttState> {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
-
+    const calculatedWinner = calculateWinner(current.squares);
+    const [winner, winningMoves] = calculatedWinner?calculatedWinner:[null, null];
+    
     let moves = history.map((_, step) => {
       const desc = step ?
       'Go to move #'+step + getCoord(history[step].change!): // change is only null at step 0
@@ -136,12 +140,12 @@ class Game extends React.Component<{}, tttState> {
           <Board 
             squares = {current.squares}
             onClick = {(i: number) => this.handleClick(i)}
+            winningMoves = {winningMoves}
           />
         </div>
         <div className="game-info">
           <div>{status}</div>
           <input type="checkbox" onMouseDown={()=> this.setState({historyAscending: !this.state.historyAscending})}/> Toggle ordering
-          {/* <div>{this.state.historyAscending?"Toggled":"Not"}</div> */}
           <ol reversed={!this.state.historyAscending}>{moves}</ol>
         </div>
       </div>
@@ -156,7 +160,7 @@ function getNext(xIsNext: boolean): Piece {
   return xIsNext ? 'X' : 'O';
 }
 
-function calculateWinner(squares: Array<Piece>) {
+function calculateWinner(squares: Array<Piece>):[Piece, number[]]|null {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -170,7 +174,7 @@ function calculateWinner(squares: Array<Piece>) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return [squares[a], lines[i]];
     }
   }
   return null;
