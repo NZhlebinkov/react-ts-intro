@@ -1,7 +1,7 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
+const BOARD_SIZE = 3;
 type Piece = 'X' | 'O';
 interface boardProps {
   squares: any,
@@ -39,24 +39,27 @@ class Board extends React.Component<boardProps> {
     );
   }
 
+  renderRow(i: number) {
+    let squares:JSX.Element[] = []
+    for (let cell = 0; cell < BOARD_SIZE; cell++) {
+      squares.push(this.renderSquare(cell))
+    }
+    return (
+      <div className="board-row">
+        {squares}
+      </div>
+    )
+  }
+
+
   render() {
+    let rows:JSX.Element[] = [];
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      rows.push(this.renderRow(i))
+    }
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
+        {rows}
       </div>
     );
   }
